@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#00A3A3">
+<meta name="description" content="CATATANKU - catatan pribadi terenkripsi">
+<meta name="referrer" content="no-referrer">
+<title>CATATANKU</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{--toska:#00A3A3;--toska-tua:#00807F;--toska-muda:#E0F5F5;--teks:#212121;--teks2:#616161;--garis:#E6E6E6;--bahaya:#D32F2F;--isi:#F7F7F7}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#fff;color:var(--teks);font-family:Roboto,-apple-system,"Segoe UI",system-ui,sans-serif;font-size:16px}
+button,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+#app{max-width:600px;margin:0 auto;min-height:100%;position:relative}
+.screen{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center;text-align:center}
+.pad{padding:24px}
+.muted{color:var(--teks2)}
+.small{font-size:13px}
+svg{width:24px;height:24px;fill:currentColor;display:block}
+/* Header */
+.bar{position:sticky;top:0;z-index:5;background:var(--toska);color:#fff;display:flex;align-items:center;gap:4px;height:56px;padding:0 4px 0 16px;padding-top:env(safe-area-inset-top)}
+.bar.with-back{padding-left:4px}
+.bar h1{flex:1;margin:0;font-size:20px;font-weight:700;letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{background:none;border:0;padding:12px;border-radius:50%;cursor:pointer;color:inherit;display:flex}
+.icon-btn:active{background:rgba(255,255,255,.2)}
+/* Logo */
+.logo{display:flex;flex-direction:column;align-items:center;gap:6px}
+.logo span{color:var(--toska);font-weight:800;font-size:26px;letter-spacing:5px;padding-left:5px}
+.logo i{display:block;width:52px;height:3px;border-radius:2px;background:var(--toska)}
+.logo.big span{font-size:30px;letter-spacing:6px}
+/* Tombol */
+.btn{border:0;border-radius:10px;min-height:48px;padding:0 16px;font-weight:700;letter-spacing:1px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--toska);color:#fff}
+.btn.primary:active{background:var(--toska-tua)}
+.btn.outline{background:#fff;color:var(--toska-tua);border:1.5px solid var(--toska)}
+.btn.danger{background:var(--bahaya);color:#fff}
+.btn.text{background:none;color:var(--toska-tua);min-height:40px}
+.btn.text.danger{background:none;color:var(--bahaya)}
+.btn:disabled{opacity:.5;cursor:default}
+.link{background:none;border:0;color:var(--toska-tua);font-weight:600;padding:10px;cursor:pointer}
+.link.muted{color:var(--teks2);font-weight:400}
+.row-btns{display:flex;gap:10px;padding:8px 16px calc(12px + env(safe-area-inset-bottom))}
+.row-btns .btn{flex:1}
+/* Input */
+input.field,textarea.field{width:100%;border:1.5px solid transparent;background:var(--isi);border-radius:10px;padding:13px 14px;outline:none}
+input.field:focus,textarea.field:focus{border-color:var(--toska)}
+/* Auth */
+.auth-wrap{width:100%;max-width:400px;margin:auto;display:flex;flex-direction:column;gap:12px}
+.auth-wrap .logo{margin-bottom:4px}
+.auth-wrap p{text-align:center;margin:0 0 20px}
+.pw{position:relative}
+.pw .icon-btn{position:absolute;right:2px;top:50%;transform:translateY(-50%);color:var(--teks2)}
+.pw input{padding-right:48px}
+/* PIN */
+.pin-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 24px calc(16px + env(safe-area-inset-bottom));text-align:center}
+.pin-wrap h2{font-size:18px;font-weight:600;margin:28px 0 6px}
+.pin-wrap p{margin:0;min-height:20px}
+.dots{display:flex;gap:16px;margin:26px 0 12px}
+.dots b{width:14px;height:14px;border-radius:50%;border:1.6px solid var(--toska);transition:background .12s}
+.dots b.on{background:var(--toska)}
+.dots.err b{border-color:var(--bahaya)}
+.pin-msg{min-height:40px;color:var(--bahaya);font-size:13px;display:flex;align-items:center;justify-content:center;max-width:320px}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:12px 36px;margin:4px 0 12px}
+.key{width:72px;height:72px;border-radius:50%;border:0;background:var(--toska-muda);font-size:26px;font-weight:500;cursor:pointer}
+.key:active{background:#c4ecec}
+.key.plain{background:none;color:var(--teks2);display:flex;align-items:center;justify-content:center}
+.spinner{width:24px;height:24px;border:2.5px solid var(--toska-muda);border-top-color:var(--toska);border-radius:50%;animation:putar .8s linear infinite}
+.btn .spinner{border-color:rgba(255,255,255,.4);border-top-color:#fff;width:20px;height:20px}
+@keyframes putar{to{transform:rotate(360deg)}}
+/* Kode pemulihan */
+.code-wrap{padding:24px;display:flex;flex-direction:column;gap:14px;max-width:460px;margin:0 auto;width:100%}
+.code-wrap h2{text-align:center;font-size:18px;margin:16px 0 0}
+.code-wrap p{text-align:center;line-height:1.45;margin:0}
+.code-box{background:var(--toska-muda);border:1.5px solid var(--toska);border-radius:12px;padding:20px 10px;text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:19px;font-weight:700;letter-spacing:1.5px;user-select:all;word-break:break-all}
+.check{display:flex;gap:12px;align-items:center;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--toska)}
+/* Beranda */
+.search{padding:12px 16px 8px;position:relative}
+.search svg{position:absolute;left:28px;top:50%;transform:translateY(-35%);color:var(--teks2);width:22px;height:22px}
+.search input{padding-left:44px;padding-right:44px}
+.search .icon-btn{position:absolute;right:20px;top:50%;transform:translateY(-38%);color:var(--teks2);padding:8px}
+#list{list-style:none;margin:0;padding:0 0 100px}
+#list li{margin:0 16px}
+#list li+li{border-top:1px solid var(--garis)}
+.row{width:100%;display:flex;align-items:center;gap:12px;background:none;border:0;padding:16px 4px;text-align:left;cursor:pointer}
+.row:active{background:var(--isi)}
+.row span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.row span.rusak{color:var(--teks2)}
+.row svg{color:var(--toska);flex:none}
+.empty{text-align:center;color:var(--teks2);padding:48px 32px;line-height:1.6;white-space:pre-line}
+.fab{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));right:max(24px,calc(50% - 300px + 24px));width:60px;height:60px;border-radius:50%;border:0;background:var(--toska);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:4}
+.fab svg{width:32px;height:32px}
+.fab:active{background:var(--toska-tua)}
+/* Menu */
+.menu{position:absolute;right:8px;top:calc(52px + env(safe-area-inset-top));background:#fff;color:var(--teks);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.2);padding:6px 0;z-index:20;min-width:220px}
+.menu button{display:flex;gap:14px;align-items:center;width:100%;background:none;border:0;padding:13px 18px;text-align:left;cursor:pointer}
+.menu button:active{background:var(--isi)}
+.menu svg{color:var(--teks2)}
+/* Detail */
+.detail{flex:1;padding:20px 20px 24px}
+.detail h2{margin:0;font-size:22px;font-weight:700;word-wrap:break-word}
+.detail .tgl{font-size:12px;color:var(--teks2);margin:6px 0 14px}
+.detail hr{border:0;border-top:1px solid var(--garis);margin:0 0 14px}
+.detail .isi{white-space:pre-wrap;word-wrap:break-word;line-height:1.55;user-select:text}
+.detail .isi a{color:var(--toska-tua)}
+.bottom{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--garis)}
+/* Editor */
+.editor{flex:1;display:flex;flex-direction:column;gap:12px;padding:16px 16px 0}
+.editor #ed-judul{font-size:18px;font-weight:600}
+.editor textarea{flex:1;min-height:45vh;resize:none;line-height:1.5}
+/* Dialog & toast */
+.dlg-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px}
+.dlg{background:#fff;border-radius:16px;padding:22px 22px 10px;width:100%;max-width:380px;max-height:85vh;overflow:auto}
+.dlg h3{margin:0 0 12px;font-size:19px}
+.dlg-body{color:var(--teks);line-height:1.45}
+.dlg-actions{display:flex;justify-content:flex-end;gap:4px;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#323232;color:#fff;padding:12px 18px;border-radius:8px;max-width:calc(100% - 32px);width:max-content;opacity:0;pointer-events:none;transition:.2s;z-index:60;font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--bahaya)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="scr-memuat" class="screen center"><div class="spinner"></div></section>
+
+  <section id="scr-galat" class="screen center pad" hidden>
+    <p id="galat-pesan" style="margin:0 0 20px;line-height:1.5"></p>
+    <button class="btn primary" id="galat-ulang">COBA LAGI</button>
+  </section>
+
+  <!-- Masuk / Daftar -->
+  <section id="scr-auth" class="screen pad" hidden>
+    <form class="auth-wrap" id="auth-form" novalidate>
+      <div class="logo big"><span>CATATANKU</span><i></i></div>
+      <p class="muted" id="auth-sub">Masuk ke akun Anda</p>
+      <input class="field" id="auth-email" type="email" placeholder="Email" autocomplete="email">
+      <div class="pw">
+        <input class="field" id="auth-sandi" type="password" placeholder="Kata sandi" autocomplete="current-password">
+        <button type="button" class="icon-btn" id="auth-mata" aria-label="Tampilkan kata sandi" data-ic="mata"></button>
+      </div>
+      <input class="field" id="auth-sandi2" type="password" placeholder="Ulangi kata sandi" autocomplete="new-password" hidden>
+      <button class="btn primary" id="auth-kirim" type="submit">MASUK</button>
+      <button class="link" id="auth-ganti" type="button">Belum punya akun? Daftar</button>
+      <button class="link muted" id="auth-lupa" type="button">Lupa kata sandi?</button>
+    </form>
+  </section>
+
+  <!-- Papan PIN (buat, masukkan, ganti, pemulihan) -->
+  <section id="scr-pin" class="screen" hidden>
+    <header class="bar with-back" id="pin-bar" hidden>
+      <button class="icon-btn" id="pin-kembali" aria-label="Kembali" data-ic="kembali"></button>
+      <h1 id="pin-bar-judul"></h1>
+    </header>
+    <div class="pin-wrap">
+      <div class="logo" id="pin-logo"><span>CATATANKU</span><i></i></div>
+      <h2 id="pin-judul"></h2>
+      <p id="pin-ket" class="muted"></p>
+      <div class="dots" id="pin-dots"><b></b><b></b><b></b><b></b><b></b><b></b></div>
+      <div class="pin-msg" id="pin-pesan"></div>
+      <div class="keypad" id="keypad">
+        <button class="key" data-d="1">1</button><button class="key" data-d="2">2</button><button class="key" data-d="3">3</button>
+        <button class="key" data-d="4">4</button><button class="key" data-d="5">5</button><button class="key" data-d="6">6</button>
+        <button class="key" data-d="7">7</button><button class="key" data-d="8">8</button><button class="key" data-d="9">9</button>
+        <span></span><button class="key" data-d="0">0</button>
+        <button class="key plain" id="pin-hapus" aria-label="Hapus" data-ic="hapus"></button>
+      </div>
+      <button class="link" id="pin-bawah1" hidden></button>
+      <button class="link muted small" id="pin-bawah2" hidden></button>
+    </div>
+  </section>
+
+  <!-- Kode pemulihan (tampil sekali setelah PIN dibuat) -->
+  <section id="scr-kode" class="screen" hidden>
+    <div class="code-wrap">
+      <div class="logo"><span>CATATANKU</span><i></i></div>
+      <h2>PIN berhasil dibuat</h2>
+      <p class="muted">Berikut KODE PEMULIHAN Anda. Tulis dan simpan di tempat aman. Kode ini satu-satunya cara membuka catatan jika Anda lupa PIN, dan hanya ditampilkan sekali ini.</p>
+      <div class="code-box" id="kode-teks"></div>
+      <button class="link" id="kode-salin" type="button" style="display:flex;gap:8px;align-items:center;justify-content:center"><span data-ic="salin"></span>Salin kode</button>
+      <label class="check"><input type="checkbox" id="kode-cek"> Saya sudah menyimpan kode pemulihan ini.</label>
+      <button class="btn primary" id="kode-lanjut" disabled>LANJUTKAN</button>
+    </div>
+  </section>
+
+  <!-- Lupa PIN -->
+  <section id="scr-pulih" class="screen" hidden>
+    <header class="bar with-back">
+      <button class="icon-btn" data-kembali aria-label="Kembali" data-ic="kembali"></button>
+      <h1>Lupa PIN</h1>
+    </header>
+    <div class="code-wrap">
+      <p class="muted" style="text-align:left">Masukkan kode pemulihan 20 karakter yang Anda simpan saat pertama kali membuat PIN.</p>
+      <input class="field" id="pulih-kode" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;font-size:17px">
+      <button class="btn primary" id="pulih-lanjut">LANJUTKAN</button>
+      <p class="muted small" style="text-align:left">Demi keamanan, catatan terenkripsi dengan kunci yang hanya dapat dibuka dengan PIN atau kode pemulihan. Jika keduanya hilang, catatan tidak dapat dibuka oleh siapa pun.</p>
+    </div>
+  </section>
+
+  <!-- Beranda: daftar catatan -->
+  <section id="scr-beranda" class="screen" hidden>
+    <header class="bar">
+      <h1>CATATANKU</h1>
+      <button class="icon-btn" id="btn-menu" aria-label="Pengaturan" data-ic="pengaturan"></button>
+    </header>
+    <div class="menu" id="menu" hidden>
+      <button id="menu-pin"><span data-ic="kunci"></span>Ganti PIN</button>
+      <button id="menu-info"><span data-ic="info"></span>Informasi aplikasi</button>
+      <button id="menu-keluar"><span data-ic="keluar"></span>Keluar aplikasi</button>
+    </div>
+    <div class="search">
+      <span data-ic="cari"></span>
+      <input class="field" id="cari" type="search" placeholder="Cari catatan" autocomplete="off">
+      <button class="icon-btn" id="cari-hapus" aria-label="Hapus pencarian" data-ic="tutup" hidden></button>
+    </div>
+    <ul id="list"></ul>
+    <div class="empty" id="kosong" hidden></div>
+    <button class="fab" id="fab" aria-label="Tambah catatan" data-ic="tambah"></button>
+  </section>
+
+  <!-- Detail catatan -->
+  <section id="scr-detail" class="screen" hidden>
+    <header class="bar with-back">
+      <button class="icon-btn" data-kembali aria-label="Kembali" data-ic="kembali"></button>
+      <h1>CATATANKU</h1>
+    </header>
+    <article class="detail">
+      <h2 id="det-judul"></h2>
+      <div class="tgl" id="det-tgl"></div>
+      <hr>
+      <div class="isi" id="det-isi"></div>
+    </article>
+    <div class="bottom row-btns">
+      <button class="btn outline" data-kembali>KEMBALI</button>
+      <button class="btn primary" id="det-edit">EDIT</button>
+      <button class="btn danger" id="det-hapus">HAPUS</button>
+    </div>
+  </section>
+
+  <!-- Tambah / Edit -->
+  <section id="scr-editor" class="screen" hidden>
+    <header class="bar with-back">
+      <button class="icon-btn" data-kembali aria-label="Kembali" data-ic="kembali"></button>
+      <h1 id="ed-bar">Tambah Catatan</h1>
+    </header>
+    <div class="editor">
+      <input class="field" id="ed-judul" placeholder="Judul catatan" maxlength="200" autocapitalize="sentences">
+      <textarea class="field" id="ed-isi" placeholder="Tulis isi catatan di sini..." autocapitalize="sentences"></textarea>
+    </div>
+    <div class="row-btns">
+      <button class="btn outline" data-kembali>BATAL</button>
+      <button class="btn primary" id="ed-simpan">SIMPAN</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="dlg-bg" id="dlg" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-judul">
+    <h3 id="dlg-judul"></h3>
+    <div class="dlg-body" id="dlg-isi"></div>
+    <div class="dlg-actions">
+      <button class="btn text" id="dlg-batal">BATAL</button>
+      <button class="btn text" id="dlg-ok">OK</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<noscript><p style="padding:24px">CATATANKU membutuhkan JavaScript.</p></noscript>
+<script type="module" src="app.js"></script>
+</body>
+</html>
